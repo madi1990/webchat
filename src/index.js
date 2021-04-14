@@ -6,7 +6,7 @@ const socketio = require('socket.io')
 const app = express()
 const server = http.createServer(app)
 const io = socketio(server)
-const PORT = process.env.PORT || 3000
+const PORT = process.env.PORT || 80
 const publicdir = path.join(__dirname, '../public')
 app.use(express.static(publicdir))
 
