@@ -11,7 +11,7 @@ const $locations = document.querySelector("#locations")
 const msgtemplate = document.querySelector("#msg-template").innerHTML
 const loctemplate = document.querySelector("#location-template").innerHTML
 const sidebartemplate = document.querySelector('#user-rooms').innerHTML
-
+const { username, room } = Qs.parse(location.search, { ignoreQueryPrefix: true })
 const username = socket.id
 const room = 'default'
 
