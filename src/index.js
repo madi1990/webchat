@@ -12,51 +12,51 @@ const publicdir = path.join(__dirname, '../public')
 app.use(express.static(publicdir))
 
 const { generatemsg } = require('./utils/messages')
-const defaultRoom = 'default'
 
 app.get('/test', function (req, res) {
     res.send('hello world')
 })
 
-// redisClient will act as subscriber
-const redisClient = redis.createClient({
-    url: "redis://localhost:6379",
-    password: "1qaz2wsx#EDC"
-})
-
-const publisher = redisClient.duplicate()
-
-redisClient.subscribe(defaultRoom)
-
-redisClient.on('connect', function() {
-    console.log('redis connected');
-});
-
-redisClient.on('message', (channel, msg) => {
-    // Sub
-    if (channel === defaultRoom) {
-        // Send message to users
-        io.to(defaultRoom).emit("message", generatemsg(io.id, msg))
-    }
-});
-
 io.on('connection', (socket) => {
     console.log("new connection")
+
+    const redisClient = redis.createClient({
+        url: "redis://localhost:6379",
+        password: "1qaz2wsx#EDC"
+    })
+
+    redisClient.on('connect', function() {
+        console.log('redis connected');
+    });
+
+    const publisher = redisClient.duplicate()   
+
+    // Receive a broadcast message
+    redisClient.on('message', (room, enc) => {
+        console.log(enc);
+        var obj = JSON.parse(enc)
+        socket.broadcast.to(room).emit("message", generatemsg(obj.username, obj.msg))
+    })
+
+    // Receive message from users
+    socket.on("sendMessage", (obj, callback) => {
+        // Send message to itself
+        socket.emit("message", generatemsg(obj.username, obj.msg))
+        publisher.publish(obj.room, JSON.stringify(generatemsg(obj.username, obj.msg)))
+        if(callback) callback()
+    })
 
     // User joins
     socket.on("join", ({ username, room }) => {
         socket.join(room)
+        // Listen to the data broadcast from the same room
+        redisClient.subscribe(room)
+        // Send admin greeting to the newly joined customer itself
         socket.emit("message", generatemsg("Admin", "Welcome!"))
-        //socket.broadcast.to(room).emit("message", generatemsg("Admin", username + ` has joined!`))
-        publisher.publish(room, username + ` has joined!`)
+        // Broadcast user join message to the same room except itself
+        publisher.publish(room, JSON.stringify(generatemsg("Admin", username + ` has joined!`)))
     })
 
-    // Receive message from users
-    socket.on("sendMessage", (msg, callback) => {
-        // Pub
-        publisher.publish(defaultRoom, msg)
-        if(callback) callback()
-    })
 })
 
 server.listen(PORT, () => {

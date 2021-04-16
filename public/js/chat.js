@@ -12,8 +12,6 @@ const msgtemplate = document.querySelector("#msg-template").innerHTML
 const loctemplate = document.querySelector("#location-template").innerHTML
 const sidebartemplate = document.querySelector('#user-rooms').innerHTML
 const { username, room } = Qs.parse(location.search, { ignoreQueryPrefix: true })
-const username = socket.id
-const room = 'default'
 
 const autoscroll = () => {
     const $newmsg = $messages.lastElementChild
@@ -42,7 +40,7 @@ $msgForm.addEventListener("submit", (e) => {
     $msgFormButton.setAttribute('disabled', 'disabled')
     let msg = document.querySelector("input").value
 
-    socket.emit("sendMessage", msg, (error) => {
+    socket.emit("sendMessage", {username, room, msg}, (error) => {
         $msgFormButton.removeAttribute('disabled')
         $msgForInput.value = ''
         $msgForInput.focus()
