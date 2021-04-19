@@ -3,6 +3,7 @@ const http = require('http')
 const express = require('express')
 const socketio = require('socket.io')
 const redis = require('redis')
+require('dotenv').config({ path: __dirname + '/../.env' })
 
 const app = express()
 const server = http.createServer(app)
@@ -21,8 +22,8 @@ io.on('connection', (socket) => {
     console.log("new connection")
 
     const redisClient = redis.createClient({
-        url: "redis://localhost:6379",
-        password: "1qaz2wsx#EDC"
+        url: process.env.REDIS_URL,
+        password: process.env.REDIS_PASS
     })
 
     redisClient.on('connect', function() {
