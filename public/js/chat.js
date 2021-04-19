@@ -1,4 +1,4 @@
-const socket = io()
+const socket = io({transports: ['websocket'], upgrade: false});
 
 const $msgForm = document.querySelector("#user")
 const $msgForInput = $msgForm.querySelector('input')

@@ -31,17 +31,15 @@ io.on('connection', (socket) => {
 
     const publisher = redisClient.duplicate()   
 
-    // Receive a broadcast message
+    // Send a broadcast message
     redisClient.on('message', (room, enc) => {
-        console.log(enc);
         var obj = JSON.parse(enc)
-        socket.broadcast.to(room).emit("message", generatemsg(obj.username, obj.msg))
+        //socket.broadcast.to(room).emit("message", generatemsg(obj.username, obj.text))
+        socket.emit("message", generatemsg(obj.username, obj.text))
     })
 
     // Receive message from users
-    socket.on("sendMessage", (obj, callback) => {
-        // Send message to itself
-        socket.emit("message", generatemsg(obj.username, obj.msg))
+    socket.on("sendMessage", (obj, callback) => {    
         publisher.publish(obj.room, JSON.stringify(generatemsg(obj.username, obj.msg)))
         if(callback) callback()
     })
@@ -53,8 +51,14 @@ io.on('connection', (socket) => {
         redisClient.subscribe(room)
         // Send admin greeting to the newly joined customer itself
         socket.emit("message", generatemsg("Admin", "Welcome!"))
-        // Broadcast user join message to the same room except itself
+        // Broadcast user join message to the same room
         publisher.publish(room, JSON.stringify(generatemsg("Admin", username + ` has joined!`)))
+    })
+
+    // This event will be triggered on page refresh
+    socket.on('disconnect', function(reason) {
+        console.log('Disconnecting!')
+        redisClient.end(true)   // Forcibly close the connection to the Redis server
     })
 
 })
