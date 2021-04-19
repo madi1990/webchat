@@ -56,6 +56,11 @@ io.on('connection', (socket) => {
         publisher.publish(room, JSON.stringify(generatemsg("Admin", username + ` has joined!`)))
     })
 
+    socket.on("sendLocation", (obj, callback) => {
+        publisher.publish(obj.room, JSON.stringify(generatemsg(obj.username, `https://www.google.com/maps?q=${obj.latitude},${obj.longitude}`)))
+        if(callback) callback()
+    })
+
     // This event will be triggered on page refresh
     socket.on('disconnect', function(reason) {
         console.log('Disconnecting!')

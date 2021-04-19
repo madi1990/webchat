@@ -52,6 +52,28 @@ $msgForm.addEventListener("submit", (e) => {
     })
 })
 
+$geoLocationButton.addEventListener("click", () => {
+    if (!navigator.geolocation) {
+        return alert("no browser supoport")
+    }
+
+    $geoLocationButton.setAttribute('disabled', 'disabled')
+    navigator.geolocation.getCurrentPosition((position) => {
+
+        socket.emit("sendLocation", {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            username: username,
+            room: room
+        }, () => {
+            $msgForInput.focus()
+            $geoLocationButton.removeAttribute('disabled')
+            console.log("location shared", position)
+        })
+
+    })
+})
+
 socket.on("message", (msg) => {
     console.log(msg)
     const html = Mustache.render(msgtemplate, {
