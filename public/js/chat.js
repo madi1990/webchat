@@ -1,4 +1,4 @@
-const socket = io()
+const socket = io({transports: ['websocket'], upgrade: false});
 
 const $msgForm = document.querySelector("#user")
 const $msgForInput = $msgForm.querySelector('input')
@@ -11,9 +11,7 @@ const $locations = document.querySelector("#locations")
 const msgtemplate = document.querySelector("#msg-template").innerHTML
 const loctemplate = document.querySelector("#location-template").innerHTML
 const sidebartemplate = document.querySelector('#user-rooms').innerHTML
-
-const username = socket.id
-const room = 'default'
+const { username, room } = Qs.parse(location.search, { ignoreQueryPrefix: true })
 
 const autoscroll = () => {
     const $newmsg = $messages.lastElementChild
@@ -42,7 +40,7 @@ $msgForm.addEventListener("submit", (e) => {
     $msgFormButton.setAttribute('disabled', 'disabled')
     let msg = document.querySelector("input").value
 
-    socket.emit("sendMessage", msg, (error) => {
+    socket.emit("sendMessage", {username, room, msg}, (error) => {
         $msgFormButton.removeAttribute('disabled')
         $msgForInput.value = ''
         $msgForInput.focus()
@@ -51,6 +49,28 @@ $msgForm.addEventListener("submit", (e) => {
         }
 
         console.log('Message delivered!')
+    })
+})
+
+$geoLocationButton.addEventListener("click", () => {
+    if (!navigator.geolocation) {
+        return alert("no browser supoport")
+    }
+
+    $geoLocationButton.setAttribute('disabled', 'disabled')
+    navigator.geolocation.getCurrentPosition((position) => {
+
+        socket.emit("sendLocation", {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            username: username,
+            room: room
+        }, () => {
+            $msgForInput.focus()
+            $geoLocationButton.removeAttribute('disabled')
+            console.log("location shared", position)
+        })
+
     })
 })
 
