@@ -1,6 +1,7 @@
 .chat{
     padding: 0;
     height: 100vh;
+    overflow-x: hidden;
 }
 header {
     margin-top: 16px;
