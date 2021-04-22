@@ -38,6 +38,9 @@ header a {
     font-size: 16px;
 }
 @media screen and (max-width:550px){
+    .chat{
+        height: 85vh;
+    }
     .compose{
         display: block;
         padding-left: 10px;
